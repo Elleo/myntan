@@ -1,16 +1,11 @@
-# myntan
+# Myntan
 
-A new Flutter project.
+A mind mapping app for Linux written using Flutter. Myntan is compatible with Mindly files and can maintain synchronisation with Mindly via Dropbox.
 
-## Getting Started
+## Credits
 
-This project is a starting point for a Flutter application.
+Design:
+* Mike Sheldon ([@mikesheldon](https://twitter.com/mikesheldon))
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+Programming:
+* Mike Sheldon ([@mikesheldon](https://twitter.com/mikesheldon))
