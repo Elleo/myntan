@@ -56,6 +56,7 @@ class MenuPage extends StatefulWidget {
 
 class _MenuPageState extends State<MenuPage> {
     int _counter = 0;
+    List _items;
 
     void _incrementCounter() {
         setState(() {
@@ -65,19 +66,22 @@ class _MenuPageState extends State<MenuPage> {
             // _counter without calling setState(), then the build method would not be
             // called again, and so nothing would appear to happen.
             _counter++;
-            var dropboxDir = new Directory('/home/mike/Dropbox/Apps/Mindly');
-            dropboxDir.list(recursive: false, followLinks: true)
-                .listen((FileSystemEntity entity) {
-                    print(entity.path);
-                    if (entity.path.endsWith(".mndl")) {
-                        var f = File(entity.path);
-                        var bytes = f.readAsBytesSync();
-                        var inflated = zlib.decode(bytes);
-                        var data = utf8.decode(inflated);
-                        print(json.decode(data));
-                    }
-                });
-        });
+       });
+    }
+
+    void _loadFiles() {
+        var dropboxDir = new Directory('/home/mike/Dropbox/Apps/Mindly');
+        _items = new List();
+        var files = dropboxDir.listSync(recursive: false, followLinks: true);
+        for (FileSystemEntity entity in files) {
+            if (entity.path.endsWith(".mndl")) {
+                var f = File(entity.path);
+                var bytes = f.readAsBytesSync();
+                var inflated = zlib.decode(bytes);
+                var data = utf8.decode(inflated);
+                _items.add(json.decode(data));
+            }
+        }
     }
 
     @override
@@ -88,6 +92,7 @@ class _MenuPageState extends State<MenuPage> {
         // The Flutter framework has been optimized to make rerunning build methods
         // fast, so that you can just rebuild anything that needs updating rather
         // than having to individually change instances of widgets.
+        _loadFiles();
         return Scaffold(
             appBar: AppBar(
                 // Here we take the value from the MenuPage object that was created by
@@ -97,31 +102,15 @@ class _MenuPageState extends State<MenuPage> {
             body: Center(
                 // Center is a layout widget. It takes a single child and positions it
                 // in the middle of the parent.
-                child: Column(
-                    // Column is also a layout widget. It takes a list of children and
-                    // arranges them vertically. By default, it sizes itself to fit its
-                    // children horizontally, and tries to be as tall as its parent.
-                    //
-                    // Invoke "debug painting" (press "p" in the console, choose the
-                    // "Toggle Debug Paint" action from the Flutter Inspector in Android
-                    // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-                    // to see the wireframe for each widget.
-                    //
-                    // Column has various properties to control how it sizes itself and
-                    // how it positions its children. Here we use mainAxisAlignment to
-                    // center the children vertically; the main axis here is the vertical
-                    // axis because Columns are vertical (the cross axis would be
-                    // horizontal).
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                        Text(
-                            'You have pushed the button this many times:',
-                        ),
-                        Text(
-                            '$_counter',
-                            style: Theme.of(context).textTheme.headline4,
-                        ),
-                    ],
+                child: GridView.count(
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    crossAxisCount: 2,
+                    children: _items.map<Widget>((mindmap) {
+                        return MindMapSummary(
+                            mindmap: mindmap
+                        );
+                    }).toList(),
                 ),
             ),
             floatingActionButton: FloatingActionButton(
@@ -129,6 +118,37 @@ class _MenuPageState extends State<MenuPage> {
                 tooltip: 'Increment',
                 child: Icon(Icons.add),
             ), // This trailing comma makes auto-formatting nicer for build methods.
+        );
+    }
+}
+
+class MindMapSummary extends StatelessWidget {
+    MindMapSummary({
+        Key key,
+        @required this.mindmap,
+    }) : super (key: key);
+
+    var mindmap;
+
+    @override
+    Widget build(BuildContext context) {
+        print(this.mindmap);
+        return GridTile(
+            child: Center (
+                child: ClipOval(
+                    child: Container(
+                        color: Colors.blue,
+                        height: 128,
+                        width: 128,
+                        child: Center(
+                            child: Text(this.mindmap['ideaDocumentDataObject']['idea']['text'],
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                        ),
+                    ),
+                ),
+            ),
         );
     }
 }
