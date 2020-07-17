@@ -9,6 +9,25 @@ void main() {
     runApp(Myntan());
 }
 
+Color strToColor(String colorStr) {
+    RegExp exp = new RegExp(r"[a-z]+([0-9]+)");
+    int variant = 500;
+    if (exp.hasMatch(colorStr)) {
+        variant = 800 - int.parse(exp.firstMatch(colorStr).group(1)) * 100;
+    }
+    print(variant);
+    if (colorStr.startsWith("pink"))    return Colors.pink[variant];
+    if (colorStr.startsWith("cyan"))    return Colors.cyan[variant];
+    if (colorStr.startsWith("red"))     return Colors.red[variant];
+    if (colorStr.startsWith("yellow"))  return Colors.yellow[variant];
+    if (colorStr.startsWith("orange"))  return Colors.orange[variant];
+    if (colorStr.startsWith("green"))   return Colors.green[variant];
+    if (colorStr.startsWith("blue"))    return Colors.blue[variant];
+    if (colorStr.startsWith("black"))   return Colors.black;
+    if (colorStr.startsWith("white"))   return Colors.white;
+    return Colors.white;
+}
+
 class Myntan extends StatelessWidget {
     // This widget is the root of your application.
     @override
@@ -133,18 +152,35 @@ class MindMapSummary extends StatelessWidget {
     @override
     Widget build(BuildContext context) {
         print(this.mindmap);
+        String title = this.mindmap['ideaDocumentDataObject']['idea']['text'];
+        if (this.mindmap['ideaDocumentDataObject']['idea']['iconImage'] != null) {
+            if (this.mindmap['ideaDocumentDataObject']['idea']['iconImage']['symbol'] != null) {
+                title = this.mindmap['ideaDocumentDataObject']['idea']['iconImage']['symbol'] + " " + title;
+            } else if (this.mindmap['ideaDocumentDataObject']['idea']['iconImage']['category'] != null) {
+                title = "[" + this.mindmap['ideaDocumentDataObject']['idea']['iconImage']['category'] + "] " + title;
+            }
+        }
         return GridTile(
             child: Center (
-                child: ClipOval(
-                    child: Container(
-                        color: Colors.blue,
-                        height: 128,
-                        width: 128,
-                        child: Center(
-                            child: Text(this.mindmap['ideaDocumentDataObject']['idea']['text'],
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                child: Container(
+                    height: 128,
+                    width: 128,
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: strToColor(this.mindmap['ideaDocumentDataObject']['idea']['color']),
+                        boxShadow: [
+                            BoxShadow(
+                                color: Colors.grey[400],
+                                blurRadius: 15.0,
+                                offset: Offset(5.0, 5.0),
+                                spreadRadius: 5.0
                             ),
+                        ],
+                    ),
+                    child: Center(
+                        child: Text(title,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                     ),
                 ),
