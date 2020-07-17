@@ -70,7 +70,7 @@ class _MenuPageState extends State<MenuPage> {
     }
 
     void _loadFiles() {
-        var dropboxDir = new Directory('/home/mike/Dropbox/Apps/Mindly');
+        var dropboxDir = new Directory(Platform.environment['HOME'] + '/Dropbox/Apps/Mindly');
         _items = new List();
         var files = dropboxDir.listSync(recursive: false, followLinks: true);
         for (FileSystemEntity entity in files) {
