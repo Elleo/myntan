@@ -1,0 +1,30 @@
+name: myntan
+version: 0.1.0
+summary: Myntan
+description: Beautiful mind mapping for Linux, capable of syncing with Mindly.
+confinement: strict
+base: core18
+grade: stable
+
+plugs:
+    file-access:
+        interface: personal-files
+        read:
+            - $HOME/Documents/Myntan
+            - $HOME/Dropbox/Apps/Mindly
+        write:
+            - $HOME/Documents/Myntan
+            - $HOME/Dropbox/Apps/Mindly
+
+apps:
+   myntan:
+     command: myntan
+     extensions: [flutter-master]
+     plugs:
+         - file-access
+
+parts:
+  myntan:
+    source: .
+    plugin: flutter
+    flutter-target: lib/main.dart

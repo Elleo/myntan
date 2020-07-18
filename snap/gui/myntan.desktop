@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=0.1
+Type=Application
+Name=Myntan
+GenericName=Myntan
+Exec=myntan
+Icon=${SNAP}/meta/gui/myntan.png
+Terminal=false
+Path=/usr/bin/
+Categories=Utility;
+StartupNotify=true
