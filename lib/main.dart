@@ -55,7 +55,7 @@ class MenuPage extends StatefulWidget {
 }
 
 class _MenuPageState extends State<MenuPage> {
-    List _items;
+    List _ideas;
 
     void _addMindMap() {
 
@@ -68,7 +68,7 @@ class _MenuPageState extends State<MenuPage> {
             storageDir = new Directory(docDir.path + "/Myntan");
             storageDir = await storageDir.create(recursive: true);
         }
-        _items = new List();
+        _ideas = new List();
         var files = storageDir.listSync(recursive: false, followLinks: true);
         for (FileSystemEntity entity in files) {
             if (entity.path.endsWith(".mndl")) {
@@ -76,7 +76,7 @@ class _MenuPageState extends State<MenuPage> {
                 var bytes = f.readAsBytesSync();
                 var inflated = zlib.decode(bytes);
                 var data = utf8.decode(inflated);
-                _items.add(json.decode(data));
+                _ideas.add(json.decode(data)['ideaDocumentDataObject']['idea']);
             }
         }
     }
@@ -98,9 +98,9 @@ class _MenuPageState extends State<MenuPage> {
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
                     crossAxisCount: 2,
-                    children: _items.map<Widget>((mindmap) {
-                        return MindMapSummary(
-                            mindmap: mindmap
+                    children: _ideas.map<Widget>((idea) {
+                        return Idea(
+                            idea: idea
                         );
                     }).toList(),
                 ),
@@ -114,22 +114,22 @@ class _MenuPageState extends State<MenuPage> {
     }
 }
 
-class MindMapSummary extends StatelessWidget {
-    MindMapSummary({
+class Idea extends StatelessWidget {
+    Idea({
         Key key,
-        @required this.mindmap,
+        @required this.idea,
     }) : super (key: key);
 
-    var mindmap;
+    var idea;
 
     @override
     Widget build(BuildContext context) {
-        String title = this.mindmap['ideaDocumentDataObject']['idea']['text'];
-        if (this.mindmap['ideaDocumentDataObject']['idea']['iconImage'] != null) {
-            if (this.mindmap['ideaDocumentDataObject']['idea']['iconImage']['symbol'] != null) {
-                title = this.mindmap['ideaDocumentDataObject']['idea']['iconImage']['symbol'] + " " + title;
-            } else if (this.mindmap['ideaDocumentDataObject']['idea']['iconImage']['category'] != null) {
-                title = "[" + this.mindmap['ideaDocumentDataObject']['idea']['iconImage']['category'] + "] " + title;
+        String title = this.idea['text'];
+        if (this.idea['iconImage'] != null) {
+            if (this.idea['iconImage']['symbol'] != null) {
+                title = this.idea['iconImage']['symbol'] + " " + title;
+            } else if (this.idea['iconImage']['category'] != null) {
+                title = "[" + this.idea['iconImage']['category'] + "] " + title;
             }
         }
         return GridTile(
@@ -138,7 +138,7 @@ class MindMapSummary extends StatelessWidget {
                     onTap: () {
                         Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => MindMapPage(mindmap: this.mindmap)),
+                            MaterialPageRoute(builder: (context) => IdeaPage(idea: this.idea)),
                         );
                     },
                     child: Container(
@@ -146,7 +146,7 @@ class MindMapSummary extends StatelessWidget {
                         width: 128,
                         decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: strToColor(this.mindmap['ideaDocumentDataObject']['idea']['color']),
+                            color: strToColor(this.idea['color']),
                             boxShadow: [
                                 BoxShadow(
                                     color: Colors.grey[400],
@@ -169,26 +169,38 @@ class MindMapSummary extends StatelessWidget {
     }
 }
 
-class MindMapPage extends StatefulWidget {
-    MindMapPage({Key key, this.mindmap}) : super(key: key);
+class IdeaPage extends StatefulWidget {
+    IdeaPage({Key key, this.idea}) : super(key: key);
 
-    final mindmap;
+    final idea;
 
     @override
-    _MindMapPageState createState() => _MindMapPageState();
+    _IdeaPageState createState() => _IdeaPageState();
 }
 
-class _MindMapPageState extends State<MindMapPage> {
+class _IdeaPageState extends State<IdeaPage> {
 
     @override
     Widget build(BuildContext context) {
-         return Scaffold(
+        List ideas = new List();
+        if (widget.idea.containsKey('ideas')) {
+            ideas = widget.idea['ideas'];
+        }
+        return Scaffold(
             appBar: AppBar(
-                backgroundColor: strToColor(widget.mindmap['ideaDocumentDataObject']['idea']['color']),
-                title: Text(widget.mindmap['ideaDocumentDataObject']['idea']['text']),
+                backgroundColor: strToColor(widget.idea['color']),
+                title: Text(widget.idea['text']),
             ),
-            body: Center(
-            ),
+            body: GridView.count(
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    crossAxisCount: 2,
+                    children: ideas.map<Widget>((idea) {
+                        return Idea(
+                            idea: idea
+                        );
+                    }).toList(),
+            )
         );
     }
 
