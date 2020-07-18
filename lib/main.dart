@@ -16,7 +16,6 @@ Color strToColor(String colorStr) {
     if (exp.hasMatch(colorStr)) {
         variant = 800 - int.parse(exp.firstMatch(colorStr).group(1)) * 100;
     }
-    print(variant);
     if (colorStr.startsWith("pink"))    return Colors.pink[variant];
     if (colorStr.startsWith("cyan"))    return Colors.cyan[variant];
     if (colorStr.startsWith("red"))     return Colors.red[variant];
@@ -36,19 +35,7 @@ class Myntan extends StatelessWidget {
         return MaterialApp(
             title: 'Myntan',
             theme: ThemeData(
-                // This is the theme of your application.
-                //
-                // Try running your application with "flutter run". You'll see the
-                // application has a blue toolbar. Then, without quitting the app, try
-                // changing the primarySwatch below to Colors.green and then invoke
-                // "hot reload" (press "r" in the console where you ran "flutter run",
-                // or simply save your changes to "hot reload" in a Flutter IDE).
-                // Notice that the counter didn't reset back to zero; the application
-                // is not restarted.
                 primarySwatch: Colors.blueGrey,
-                // This makes the visual density adapt to the platform that you run
-                // the app on. For desktop platforms, the controls will be smaller and
-                // closer together (more dense) than on mobile platforms.
                 visualDensity: VisualDensity.adaptivePlatformDensity,
             ),
             home: MenuPage(title: 'Myntan'),
@@ -59,15 +46,6 @@ class Myntan extends StatelessWidget {
 class MenuPage extends StatefulWidget {
     MenuPage({Key key, this.title}) : super(key: key);
 
-    // This widget is the home page of your application. It is stateful, meaning
-    // that it has a State object (defined below) that contains fields that affect
-    // how it looks.
-
-    // This class is the configuration for the state. It holds the values (in this
-    // case the title) provided by the parent (in this case the App widget) and
-    // used by the build method of the State. Fields in a Widget subclass are
-    // always marked "final".
-
     final String title;
 
     @override
@@ -75,18 +53,10 @@ class MenuPage extends StatefulWidget {
 }
 
 class _MenuPageState extends State<MenuPage> {
-    int _counter = 0;
     List _items;
 
-    void _incrementCounter() {
-        setState(() {
-            // This call to setState tells the Flutter framework that something has
-            // changed in this State, which causes it to rerun the build method below
-            // so that the display can reflect the updated values. If we changed
-            // _counter without calling setState(), then the build method would not be
-            // called again, and so nothing would appear to happen.
-            _counter++;
-       });
+    void _addMindMap() {
+
     }
 
     Future<void> _loadFiles() async {
@@ -111,22 +81,12 @@ class _MenuPageState extends State<MenuPage> {
 
     @override
     Widget build(BuildContext context) {
-        // This method is rerun every time setState is called, for instance as done
-        // by the _incrementCounter method above.
-        //
-        // The Flutter framework has been optimized to make rerunning build methods
-        // fast, so that you can just rebuild anything that needs updating rather
-        // than having to individually change instances of widgets.
         _loadFiles();
         return Scaffold(
             appBar: AppBar(
-                // Here we take the value from the MenuPage object that was created by
-                // the App.build method, and use it to set our appbar title.
                 title: Text(widget.title),
             ),
             body: Center(
-                // Center is a layout widget. It takes a single child and positions it
-                // in the middle of the parent.
                 child: GridView.count(
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
@@ -139,10 +99,10 @@ class _MenuPageState extends State<MenuPage> {
                 ),
             ),
             floatingActionButton: FloatingActionButton(
-                onPressed: _incrementCounter,
-                tooltip: 'Increment',
+                onPressed: _addMindMap,
+                tooltip: 'New Mind Map',
                 child: Icon(Icons.add),
-            ), // This trailing comma makes auto-formatting nicer for build methods.
+            ),
         );
     }
 }
@@ -157,7 +117,6 @@ class MindMapSummary extends StatelessWidget {
 
     @override
     Widget build(BuildContext context) {
-        print(this.mindmap);
         String title = this.mindmap['ideaDocumentDataObject']['idea']['text'];
         if (this.mindmap['ideaDocumentDataObject']['idea']['iconImage'] != null) {
             if (this.mindmap['ideaDocumentDataObject']['idea']['iconImage']['symbol'] != null) {
@@ -168,29 +127,61 @@ class MindMapSummary extends StatelessWidget {
         }
         return GridTile(
             child: Center (
-                child: Container(
-                    height: 128,
-                    width: 128,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: strToColor(this.mindmap['ideaDocumentDataObject']['idea']['color']),
-                        boxShadow: [
-                            BoxShadow(
-                                color: Colors.grey[400],
-                                blurRadius: 15.0,
-                                offset: Offset(5.0, 5.0),
-                                spreadRadius: 5.0
+                child: GestureDetector(
+                    onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => MindMapPage(mindmap: this.mindmap)),
+                        );
+                    },
+                    child: Container(
+                        height: 128,
+                        width: 128,
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: strToColor(this.mindmap['ideaDocumentDataObject']['idea']['color']),
+                            boxShadow: [
+                                BoxShadow(
+                                    color: Colors.grey[400],
+                                    blurRadius: 15.0,
+                                    offset: Offset(5.0, 5.0),
+                                    spreadRadius: 5.0
+                                ),
+                            ],
+                        ),
+                        child: Center(
+                            child: Text(title,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                             ),
-                        ],
-                    ),
-                    child: Center(
-                        child: Text(title,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
                         ),
                     ),
                 ),
             ),
         );
     }
+}
+
+class MindMapPage extends StatefulWidget {
+    MindMapPage({Key key, this.mindmap}) : super(key: key);
+
+    final mindmap;
+
+    @override
+    _MindMapPageState createState() => _MindMapPageState();
+}
+
+class _MindMapPageState extends State<MindMapPage> {
+
+    @override
+    Widget build(BuildContext context) {
+         return Scaffold(
+            appBar: AppBar(
+                title: Text(widget.mindmap['ideaDocumentDataObject']['idea']['text']),
+            ),
+            body: Center(
+            ),
+        );
+    }
+
 }
