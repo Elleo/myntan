@@ -23,6 +23,8 @@ Color strToColor(String colorStr) {
     if (colorStr.startsWith("orange"))  return Colors.orange[variant];
     if (colorStr.startsWith("green"))   return Colors.green[variant];
     if (colorStr.startsWith("blue"))    return Colors.blue[variant];
+    if (colorStr.startsWith("indigo")
+      || colorStr.startsWith("violet")) return Colors.indigo[variant];
     if (colorStr.startsWith("black"))   return Colors.black;
     if (colorStr.startsWith("white"))   return Colors.white;
     return Colors.white;
@@ -79,6 +81,10 @@ class _MenuPageState extends State<MenuPage> {
         }
     }
 
+    Future<void> _refresh() async {
+        setState(() { });
+    }
+
     @override
     Widget build(BuildContext context) {
         _loadFiles();
@@ -86,7 +92,8 @@ class _MenuPageState extends State<MenuPage> {
             appBar: AppBar(
                 title: Text(widget.title),
             ),
-            body: Center(
+            body: RefreshIndicator(
+                onRefresh: _refresh,
                 child: GridView.count(
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
