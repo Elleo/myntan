@@ -184,6 +184,7 @@ class _MindMapPageState extends State<MindMapPage> {
     Widget build(BuildContext context) {
          return Scaffold(
             appBar: AppBar(
+                backgroundColor: strToColor(widget.mindmap['ideaDocumentDataObject']['idea']['color']),
                 title: Text(widget.mindmap['ideaDocumentDataObject']['idea']['text']),
             ),
             body: Center(
