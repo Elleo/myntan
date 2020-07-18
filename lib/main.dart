@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() {
     runApp(Myntan());
@@ -88,10 +89,15 @@ class _MenuPageState extends State<MenuPage> {
        });
     }
 
-    void _loadFiles() {
-        var dropboxDir = new Directory(Platform.environment['HOME'] + '/Dropbox/Apps/Mindly');
+    Future<void> _loadFiles() async {
+        Directory storageDir = new Directory(Platform.environment['HOME'] + '/Dropbox/Apps/Mindly/');
+        if (!storageDir.existsSync()) {
+            Directory docDir = await getApplicationDocumentsDirectory();
+            storageDir = new Directory(docDir.path + "/Myntan");
+            storageDir = await storageDir.create(recursive: true);
+        }
         _items = new List();
-        var files = dropboxDir.listSync(recursive: false, followLinks: true);
+        var files = storageDir.listSync(recursive: false, followLinks: true);
         for (FileSystemEntity entity in files) {
             if (entity.path.endsWith(".mndl")) {
                 var f = File(entity.path);
