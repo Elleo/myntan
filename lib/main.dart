@@ -132,6 +132,16 @@ class Idea extends StatelessWidget {
                 title = "[" + this.idea['iconImage']['category'] + "] " + title;
             }
         }
+        var displayChild;
+        if (this.idea.containsKey('bigImageData')) {
+            var bytes = base64.decode(this.idea['bigImageData'].replaceAll("\n", ""));
+            displayChild = ClipOval(child: Image.memory(bytes));
+        } else {
+            displayChild = Text(title,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                            );
+        }
         return GridTile(
             child: Center (
                 child: GestureDetector(
@@ -157,10 +167,7 @@ class Idea extends StatelessWidget {
                             ],
                         ),
                         child: Center(
-                            child: Text(title,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-                            ),
+                            child: displayChild,
                         ),
                     ),
                 ),
