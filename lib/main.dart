@@ -124,6 +124,11 @@ class Idea extends StatelessWidget {
 
     @override
     Widget build(BuildContext context) {
+        if (idea == null) {
+            return GridTile(
+                child: Text(""),
+            );
+        }
         String title = this.idea['text'];
         if (this.idea['iconImage'] != null) {
             if (this.idea['iconImage']['symbol'] != null) {
@@ -189,19 +194,50 @@ class _IdeaPageState extends State<IdeaPage> {
 
     @override
     Widget build(BuildContext context) {
+        int gridSize = 3;
         List ideas = new List();
+        List unsortedIdeas = new List();
         if (widget.idea.containsKey('ideas')) {
-            ideas = widget.idea['ideas'];
+            if (widget.idea['ideas'].length > 8) {
+                gridSize = 5;
+            }
+            unsortedIdeas = widget.idea['ideas'];
+        }
+
+        for (int i = 0; i < gridSize * gridSize; i++) {
+            ideas.add(null);
+        }
+
+        for (int i = 0; i < unsortedIdeas.length; i++) {
+            if(i % 2 == 0) {
+                ideas[i] = unsortedIdeas[i];
+            } else {
+                ideas[ideas.length - i] = unsortedIdeas[i];
+            }
+        }
+
+        if (gridSize == 3) {
+            ideas[4] = widget.idea;
+        } else if (gridSize == 5) {
+            ideas[12] = widget.idea;
+        }
+
+        var appBar = AppBar(
+            backgroundColor: strToColor(widget.idea['color']),
+            title: Text(widget.idea['text']),
+        );
+        if (widget.idea.containsKey('bigImageData')) {
+            var bytes = base64.decode(widget.idea['bigImageData'].replaceAll("\n", ""));
+            appBar = AppBar(
+                backgroundColor: strToColor(widget.idea['color']),
+            );
         }
         return Scaffold(
-            appBar: AppBar(
-                backgroundColor: strToColor(widget.idea['color']),
-                title: Text(widget.idea['text']),
-            ),
+            appBar: appBar,
             body: GridView.count(
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
-                    crossAxisCount: 2,
+                    crossAxisCount: gridSize,
                     children: ideas.map<Widget>((idea) {
                         return Idea(
                             idea: idea
