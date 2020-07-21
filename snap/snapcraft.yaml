@@ -1,5 +1,5 @@
 name: myntan
-version: 0.1.2
+version: 0.1.3
 summary: Myntan
 description: Beautiful mind mapping for Linux, capable of syncing with Mindly.
 confinement: strict
@@ -15,14 +15,33 @@ plugs:
         write:
             - $HOME/Documents/Myntan
             - $HOME/Dropbox/Apps/Mindly
+    gtk-3-themes:
+        interface: content
+        target: $SNAP/share/themes
+        default-provider: gtk-common-themes
+    icon-themes:
+        interface: content
+        target: $SNAP/share/icons
+        default-provider: gtk-common-themes
+    sound-themes:
+        interface: content
+        target: $SNAP/share/sounds
+        default-provider: gtk-common-themes
 
 apps:
    myntan:
      command: myntan
      extensions: [flutter-master]
      plugs:
+         - desktop
+         - gsettings
+         - wayland
+         - x11
          - network
          - file-access
+         - gtk-3-themes
+         - icon-themes
+         - sound-themes
 
 parts:
   myntan:
