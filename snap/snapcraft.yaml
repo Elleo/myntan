@@ -1,5 +1,5 @@
 name: myntan
-version: 0.1.0
+version: 0.1.2
 summary: Myntan
 description: Beautiful mind mapping for Linux, capable of syncing with Mindly.
 confinement: strict
@@ -21,6 +21,7 @@ apps:
      command: myntan
      extensions: [flutter-master]
      plugs:
+         - network
          - file-access
 
 parts:
