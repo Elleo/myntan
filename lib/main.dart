@@ -22,7 +22,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 
 void main() {
     runApp(Myntan());
@@ -80,10 +79,9 @@ class _MenuPageState extends State<MenuPage> {
     }
 
     Future<void> _loadFiles() async {
-        Directory storageDir = new Directory(Platform.environment['HOME'] + '/Dropbox/Apps/Mindly/');
+        Directory storageDir = new Directory('/home/' + Platform.environment['LOGNAME'] + '/Dropbox/Apps/Mindly/');
         if (!storageDir.existsSync()) {
-            Directory docDir = await getApplicationDocumentsDirectory();
-            storageDir = new Directory(docDir.path + "/Myntan");
+            storageDir = new Directory(Platform.environment['XDG_DATA_HOME'] + "/Myntan");
             storageDir = await storageDir.create(recursive: true);
         }
         _ideas = new List();
