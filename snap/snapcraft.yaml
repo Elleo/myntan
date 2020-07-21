@@ -7,13 +7,11 @@ base: core18
 grade: stable
 
 plugs:
-    file-access:
+    dropbox-sync:
         interface: personal-files
         read:
-            - $HOME/Documents/Myntan
             - $HOME/Dropbox/Apps/Mindly
         write:
-            - $HOME/Documents/Myntan
             - $HOME/Dropbox/Apps/Mindly
     gtk-3-themes:
         interface: content
