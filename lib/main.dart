@@ -163,7 +163,8 @@ class _MenuPageState extends State<MenuPage> {
                     children: _ideas.map<Widget>((idea) {
                         return Idea(
                             mindmap: idea,
-                            idea: idea
+                            idea: idea,
+                            center: false,
                         );
                     }).toList(),
                 ),
@@ -182,10 +183,12 @@ class Idea extends StatelessWidget {
         Key key,
         @required this.mindmap,
         @required this.idea,
+        this.center,
     }) : super (key: key);
 
     var mindmap;
     var idea;
+    bool center = false;
 
     Object getIdea(String searchId, var searchMap) {
         if (searchMap['identifier'] == searchId) {
@@ -231,34 +234,34 @@ class Idea extends StatelessWidget {
                             );
         }
         return GridTile(
-            child: Center (
-                child: GestureDetector(
-                    onTap: () {
+            child: GestureDetector(
+                onTap: () {
+                    if (!this.center) {
                         Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => IdeaPage(mindmap: this.mindmap, idea: this.idea)),
                         );
-                    },
-                    child: Container(
-                        height: 128,
-                        width: 128,
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: strToColor(this.idea['color']),
-                            boxShadow: [
-                                BoxShadow(
-                                    color: Colors.grey[400],
-                                    blurRadius: 15.0,
-                                    offset: Offset(5.0, 5.0),
-                                    spreadRadius: 5.0
-                                ),
-                            ],
-                        ),
-                        child: Center(
-                            child: displayChild,
-                        ),
+                    }
+                },
+                child: Center(child: Container(
+                    height: this.center ? 256 : 128,
+                    width: this.center ? 256 : 128,
+                    decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: strToColor(this.idea['color']),
+                        boxShadow: [
+                            BoxShadow(
+                                color: Colors.grey[400],
+                                blurRadius: 15.0,
+                                offset: Offset(5.0, 5.0),
+                                spreadRadius: 5.0
+                            ),
+                        ],
                     ),
-                ),
+                    child: Center(
+                        child: displayChild,
+                    ),
+                ),),
             ),
         );
     }
@@ -275,6 +278,10 @@ class IdeaPage extends StatefulWidget {
 }
 
 class _IdeaPageState extends State<IdeaPage> {
+
+    void _addIdea() {
+
+    }
 
     @override
     Widget build(BuildContext context) {
@@ -325,9 +332,15 @@ class _IdeaPageState extends State<IdeaPage> {
                     children: ideas.map<Widget>((idea) {
                         return Idea(
                             mindmap: widget.mindmap,
-                            idea: idea
+                            idea: idea,
+                            center: idea == widget.idea
                         );
                     }).toList(),
+            ),
+            floatingActionButton: FloatingActionButton(
+                onPressed: _addIdea,
+                tooltip: 'New Idea',
+                child: Icon(Icons.add),
             )
         );
     }
