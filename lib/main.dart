@@ -81,7 +81,7 @@ class _MenuPageState extends State<MenuPage> {
     }
 
     Future<void> _loadFiles() async {
-        Directory storageDir = new Directory('/home/' + Platform.environment['LOGNAME'] + '/Dropbox/Apps/Mindly/fail');
+        Directory storageDir = new Directory('/home/' + Platform.environment['LOGNAME'] + '/Dropbox/Apps/Mindly');
         if (!storageDir.existsSync()) {
             _syncAvailable = false;
             if (Platform.environment.containsKey('XDG_DATA_HOME')) {
