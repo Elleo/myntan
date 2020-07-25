@@ -58,6 +58,7 @@ class Myntan extends StatelessWidget {
                 visualDensity: VisualDensity.adaptivePlatformDensity,
             ),
             home: MenuPage(title: 'Myntan'),
+            debugShowCheckedModeBanner: false,
         );
     }
 }
@@ -72,16 +73,22 @@ class MenuPage extends StatefulWidget {
 }
 
 class _MenuPageState extends State<MenuPage> {
-    List _ideas;
+    List _ideas = new List();
+    bool _syncAvailable = true;
 
     void _addMindMap() {
 
     }
 
     Future<void> _loadFiles() async {
-        Directory storageDir = new Directory('/home/' + Platform.environment['LOGNAME'] + '/Dropbox/Apps/Mindly/');
+        Directory storageDir = new Directory('/home/' + Platform.environment['LOGNAME'] + '/Dropbox/Apps/Mindly/fail');
         if (!storageDir.existsSync()) {
-            storageDir = new Directory(Platform.environment['XDG_DATA_HOME'] + "/Myntan");
+            _syncAvailable = false;
+            if (Platform.environment.containsKey('XDG_DATA_HOME')) {
+                storageDir = new Directory(Platform.environment['XDG_DATA_HOME'] + "/Myntan");
+            } else {
+                storageDir = new Directory(Platform.environment['HOME'] + "/Documents/Myntan");
+            }
             storageDir = await storageDir.create(recursive: true);
         }
         _ideas = new List();
@@ -101,12 +108,51 @@ class _MenuPageState extends State<MenuPage> {
         setState(() { });
     }
 
+    Future<void> _showDialog() async {
+        String snapMessage = "";
+        if (Platform.environment.containsKey('SNAP')) {
+            snapMessage = "\n\nTo give the Myntan snap permission to access your Dropbox folder, open a terminal and run:\n\nsnap connect dropbox-sync:myntan";
+        }
+        return showDialog<void>(
+            context: context,
+            builder: (BuildContext context) {
+                return AlertDialog(
+                    title: Text('Enable Synchronisation'),
+                    content: SingleChildScrollView(
+                        child: Text("To synchronise with Mindly first install the Dropbox client and then ensure you're synchronising the 'Apps/Mindly' folder." + snapMessage),
+                    ),
+                    actions: <Widget>[
+                        FlatButton(
+                            child: Text('Close'),
+                            onPressed: () {
+                                _loadFiles();
+                                Navigator.of(context).pop();
+                            },
+                        ),
+                    ],
+                );
+            },
+        );
+    }
+
     @override
     Widget build(BuildContext context) {
         _loadFiles();
+        List<Widget> actions = new List();
+
+        if (!_syncAvailable) {
+            Widget warningBtn = new IconButton(
+                        icon: Icon(Icons.warning),
+                        tooltip: "Synchronisation disabled, click to enable",
+                        onPressed: _showDialog,
+            );
+            actions.add(warningBtn);
+        }
+
         return Scaffold(
             appBar: AppBar(
                 title: Text(widget.title),
+                actions: actions,
             ),
             body: RefreshIndicator(
                 onRefresh: _refresh,
