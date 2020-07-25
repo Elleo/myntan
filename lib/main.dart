@@ -162,6 +162,7 @@ class _MenuPageState extends State<MenuPage> {
                     crossAxisCount: 2,
                     children: _ideas.map<Widget>((idea) {
                         return Idea(
+                            mindmap: idea,
                             idea: idea
                         );
                     }).toList(),
@@ -179,17 +180,37 @@ class _MenuPageState extends State<MenuPage> {
 class Idea extends StatelessWidget {
     Idea({
         Key key,
+        @required this.mindmap,
         @required this.idea,
     }) : super (key: key);
 
+    var mindmap;
     var idea;
+
+    Object getIdea(String searchId, var searchMap) {
+        if (searchMap['identifier'] == searchId) {
+            return searchMap;
+        }
+        if (searchMap.containsKey("ideas")) {
+            for (Object idea in searchMap['ideas']) {
+                var result = getIdea(searchId, idea);
+                if (result != null) {
+                    return result;
+                }
+            }
+        }
+        return null;
+    }
 
     @override
     Widget build(BuildContext context) {
-        if (idea == null) {
+        if (this.idea == null) {
             return GridTile(
                 child: Text(""),
             );
+        }
+        if (this.idea['ideaType'] == 4) {
+            this.idea = this.getIdea(this.idea['linkedIdea'], this.mindmap);
         }
         String title = this.idea['text'];
         if (this.idea['iconImage'] != null) {
@@ -215,7 +236,7 @@ class Idea extends StatelessWidget {
                     onTap: () {
                         Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => IdeaPage(idea: this.idea)),
+                            MaterialPageRoute(builder: (context) => IdeaPage(mindmap: this.mindmap, idea: this.idea)),
                         );
                     },
                     child: Container(
@@ -244,8 +265,9 @@ class Idea extends StatelessWidget {
 }
 
 class IdeaPage extends StatefulWidget {
-    IdeaPage({Key key, this.idea}) : super(key: key);
+    IdeaPage({Key key, this.mindmap, this.idea}) : super(key: key);
 
+    final mindmap;
     final idea;
 
     @override
@@ -302,6 +324,7 @@ class _IdeaPageState extends State<IdeaPage> {
                     crossAxisCount: gridSize,
                     children: ideas.map<Widget>((idea) {
                         return Idea(
+                            mindmap: widget.mindmap,
                             idea: idea
                         );
                     }).toList(),
