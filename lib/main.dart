@@ -74,7 +74,7 @@ class MenuPage extends StatefulWidget {
 }
 
 class _MenuPageState extends State<MenuPage> {
-    List _ideas = new List();
+    List _docs = new List();
     bool _syncAvailable = true;
 
     void _addMindMap() {
@@ -92,7 +92,7 @@ class _MenuPageState extends State<MenuPage> {
             }
             storageDir = await storageDir.create(recursive: true);
         }
-        _ideas = new List();
+        _docs = new List();
         var files = storageDir.listSync(recursive: false, followLinks: true);
         for (FileSystemEntity entity in files) {
             if (entity.path.endsWith(".mndl")) {
@@ -100,7 +100,9 @@ class _MenuPageState extends State<MenuPage> {
                 var bytes = f.readAsBytesSync();
                 var inflated = zlib.decode(bytes);
                 var data = utf8.decode(inflated);
-                _ideas.add(json.decode(data)['ideaDocumentDataObject']['idea']);
+                var doc = json.decode(data);
+                doc['filename'] = f.path;
+                _docs.add(doc);
             }
         }
     }
@@ -164,10 +166,10 @@ class _MenuPageState extends State<MenuPage> {
                             crossAxisSpacing: 10,
                             mainAxisSpacing: 10,
                             crossAxisCount: 2,
-                            children: _ideas.map<Widget>((idea) {
+                            children: _docs.map<Widget>((doc) {
                                 return Idea(
-                                    mindmap: idea,
-                                    idea: idea,
+                                    mindmap: doc,
+                                    idea: doc['ideaDocumentDataObject']['idea'],
                                     center: false,
                                     large: true,
                                 );
@@ -222,7 +224,7 @@ class Idea extends StatelessWidget {
             );
         }
         if (this.idea['ideaType'] == 4) {
-            this.idea = this.getIdea(this.idea['linkedIdea'], this.mindmap);
+            this.idea = this.getIdea(this.idea['linkedIdea'], this.mindmap['ideaDocumentDataObject']['idea']);
         }
         String title = this.idea['text'];
         if (this.idea['iconImage'] != null) {
@@ -288,6 +290,23 @@ class IdeaPage extends StatefulWidget {
 
 class _IdeaPageState extends State<IdeaPage> {
 
+    void _save() {
+        Directory storageDir = new Directory('/home/' + Platform.environment['LOGNAME'] + '/Dropbox/Apps/Mindly');
+        if (!storageDir.existsSync()) {
+            if (Platform.environment.containsKey('XDG_DATA_HOME')) {
+                storageDir = new Directory(Platform.environment['XDG_DATA_HOME'] + "/Myntan");
+            } else {
+                storageDir = new Directory(Platform.environment['HOME'] + "/Documents/Myntan");
+            }
+        }
+
+        var f = File(widget.mindmap['filename']);
+        widget.mindmap.remove('filename');
+        var compressed = zlib.encode(utf8.encode(json.encode(widget.mindmap)));
+        f.writeAsBytes(compressed);
+        widget.mindmap['filename'] = f.path;
+    }
+
     void _addIdea() {
         final _controller = TextEditingController();
 
@@ -305,6 +324,7 @@ class _IdeaPageState extends State<IdeaPage> {
             } else {
                 widget.idea['ideas'] = [newIdea];
             }
+            _save();
             setState(() { });
             Navigator.of(context).pop();
         };
