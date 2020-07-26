@@ -300,10 +300,10 @@ class _IdeaPageState extends State<IdeaPage> {
                 'colorThemeType': 1,
                 'ideas': [],
             };
-            if (widget.mindmap.containsKey('ideas')) {
-                widget.mindmap['ideas'].add(newIdea);
+            if (widget.idea.containsKey('ideas')) {
+                widget.idea['ideas'].add(newIdea);
             } else {
-                widget.mindmap['ideas'] = [newIdea];
+                widget.idea['ideas'] = [newIdea];
             }
             setState(() { });
             Navigator.of(context).pop();
