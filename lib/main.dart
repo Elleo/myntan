@@ -280,7 +280,35 @@ class IdeaPage extends StatefulWidget {
 class _IdeaPageState extends State<IdeaPage> {
 
     void _addIdea() {
+        final _controller = TextEditingController();
+        showDialog(
+            context: context,
+            builder: (_) => new AlertDialog(
+                contentPadding: const EdgeInsets.all(16.0),
+                content: TextField(
+                    controller: _controller,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "New Idea...",
+                    ),
+                ),
+                actions: <Widget>[
+                    FlatButton(
+                        child: Text('Add Idea'),
+                        onPressed: () {
 
+                        },
+                    ),
+                    FlatButton(
+                        child: Text('Cancel'),
+                        onPressed: () {
+                            Navigator.of(context).pop();
+                        },
+                    ),
+                ],
+            ),
+        );
     }
 
     @override
