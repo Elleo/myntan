@@ -21,6 +21,7 @@ import 'dart:core';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -289,6 +290,25 @@ class _IdeaPageState extends State<IdeaPage> {
 
     void _addIdea() {
         final _controller = TextEditingController();
+
+        void processInput() {
+            var newIdea = {
+                'identifier': Uuid().v1(),
+                'text': _controller.text,
+                'ideaType': 1,
+                'color': widget.idea['color'],
+                'colorThemeType': 1,
+                'ideas': [],
+            };
+            if (widget.mindmap.containsKey('ideas')) {
+                widget.mindmap['ideas'].add(newIdea);
+            } else {
+                widget.mindmap['ideas'] = [newIdea];
+            }
+            setState(() { });
+            Navigator.of(context).pop();
+        };
+
         showDialog(
             context: context,
             builder: (_) => new AlertDialog(
@@ -296,6 +316,7 @@ class _IdeaPageState extends State<IdeaPage> {
                 content: TextField(
                     controller: _controller,
                     autofocus: true,
+                    onSubmitted: (input) { processInput(); },
                     decoration: InputDecoration(
                         border: OutlineInputBorder(),
                         labelText: "New Idea...",
@@ -304,9 +325,7 @@ class _IdeaPageState extends State<IdeaPage> {
                 actions: <Widget>[
                     FlatButton(
                         child: Text('Add Idea'),
-                        onPressed: () {
-
-                        },
+                        onPressed: processInput,
                     ),
                     FlatButton(
                         child: Text('Cancel'),
@@ -325,8 +344,11 @@ class _IdeaPageState extends State<IdeaPage> {
         List ideas = new List();
         List unsortedIdeas = new List();
         if (widget.idea.containsKey('ideas')) {
-            if (widget.idea['ideas'].length > 8) {
+            if (widget.idea['ideas'].length > 4) {
                 gridSize = 5;
+            }
+            if (widget.idea['ideas'].length > 12) {
+                gridSize = 7;
             }
             unsortedIdeas = widget.idea['ideas'];
         }
@@ -347,6 +369,8 @@ class _IdeaPageState extends State<IdeaPage> {
             ideas[4] = widget.idea;
         } else if (gridSize == 5) {
             ideas[12] = widget.idea;
+        } else if (gridSize == 7) {
+            ideas[24] = widget.idea;
         }
 
         var appBar = AppBar(
