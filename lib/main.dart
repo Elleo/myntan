@@ -156,17 +156,23 @@ class _MenuPageState extends State<MenuPage> {
             ),
             body: RefreshIndicator(
                 onRefresh: _refresh,
-                child: GridView.count(
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    crossAxisCount: 2,
-                    children: _ideas.map<Widget>((idea) {
-                        return Idea(
-                            mindmap: idea,
-                            idea: idea,
-                            center: false,
-                        );
-                    }).toList(),
+                child: Center(
+                    child: AspectRatio(
+                        aspectRatio: 1,
+                        child: GridView.count(
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 10,
+                            crossAxisCount: 2,
+                            children: _ideas.map<Widget>((idea) {
+                                return Idea(
+                                    mindmap: idea,
+                                    idea: idea,
+                                    center: false,
+                                    large: true,
+                                );
+                            }).toList(),
+                        ),
+                    ),
                 ),
             ),
             floatingActionButton: FloatingActionButton(
@@ -184,11 +190,13 @@ class Idea extends StatelessWidget {
         @required this.mindmap,
         @required this.idea,
         this.center,
+        this.large,
     }) : super (key: key);
 
     var mindmap;
     var idea;
     bool center = false;
+    bool large = false;
 
     Object getIdea(String searchId, var searchMap) {
         if (searchMap['identifier'] == searchId) {
@@ -244,8 +252,8 @@ class Idea extends StatelessWidget {
                     }
                 },
                 child: Center(child: Container(
-                    height: this.center ? 256 : 128,
-                    width: this.center ? 256 : 128,
+                    height: this.large ? 256 : 128,
+                    width: this.large ? 256 : 128,
                     decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: strToColor(this.idea['color']),
@@ -353,17 +361,23 @@ class _IdeaPageState extends State<IdeaPage> {
         }
         return Scaffold(
             appBar: appBar,
-            body: GridView.count(
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    crossAxisCount: gridSize,
-                    children: ideas.map<Widget>((idea) {
-                        return Idea(
-                            mindmap: widget.mindmap,
-                            idea: idea,
-                            center: idea == widget.idea
-                        );
-                    }).toList(),
+            body: Center(
+                child: AspectRatio(
+                    aspectRatio: 1,
+                    child: GridView.count(
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                        crossAxisCount: gridSize,
+                        children: ideas.map<Widget>((idea) {
+                            return Idea(
+                                mindmap: widget.mindmap,
+                                idea: idea,
+                                center: idea == widget.idea,
+                                large: idea == widget.idea,
+                            );
+                        }).toList(),
+                    ),
+                ),
             ),
             floatingActionButton: FloatingActionButton(
                 onPressed: _addIdea,
