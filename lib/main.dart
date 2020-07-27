@@ -244,7 +244,7 @@ class Idea extends StatelessWidget {
         } else {
             displayChild = Text(title,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'EmojiOne'),
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'EmojiOne', fontSize: this.large ? 18 : 14),
                             );
         }
         return GridTile(
