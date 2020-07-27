@@ -172,6 +172,7 @@ class _MenuPageState extends State<MenuPage> {
                                     idea: doc['ideaDocumentDataObject']['idea'],
                                     center: false,
                                     large: true,
+                                    parent: this,
                                 );
                             }).toList(),
                         ),
@@ -194,12 +195,14 @@ class Idea extends StatelessWidget {
         @required this.idea,
         this.center,
         this.large,
+        this.parent,
     }) : super (key: key);
 
     var mindmap;
     var idea;
     bool center = false;
     bool large = false;
+    var parent;
 
     Object getIdea(String searchId, var searchMap) {
         if (searchMap['identifier'] == searchId) {
@@ -251,7 +254,9 @@ class Idea extends StatelessWidget {
                         Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => IdeaPage(mindmap: this.mindmap, idea: this.idea)),
-                        );
+                        ).then((value) {
+                            parent.setState(() { });
+                        });
                     }
                 },
                 child: Center(child: Container(
@@ -456,6 +461,7 @@ class _IdeaPageState extends State<IdeaPage> {
                                 idea: idea,
                                 center: idea == widget.idea,
                                 large: idea == widget.idea,
+                                parent: this,
                             );
                         }).toList(),
                     ),
