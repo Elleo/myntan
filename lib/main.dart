@@ -241,7 +241,7 @@ class Idea extends StatelessWidget {
         } else {
             displayChild = Text(title,
                                 textAlign: TextAlign.center,
-                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontFamily: 'EmojiOne'),
                             );
         }
         return GridTile(
@@ -291,20 +291,51 @@ class IdeaPage extends StatefulWidget {
 class _IdeaPageState extends State<IdeaPage> {
 
     void _save() {
-        Directory storageDir = new Directory('/home/' + Platform.environment['LOGNAME'] + '/Dropbox/Apps/Mindly');
-        if (!storageDir.existsSync()) {
-            if (Platform.environment.containsKey('XDG_DATA_HOME')) {
-                storageDir = new Directory(Platform.environment['XDG_DATA_HOME'] + "/Myntan");
-            } else {
-                storageDir = new Directory(Platform.environment['HOME'] + "/Documents/Myntan");
-            }
-        }
-
         var f = File(widget.mindmap['filename']);
         widget.mindmap.remove('filename');
         var compressed = zlib.encode(utf8.encode(json.encode(widget.mindmap)));
         f.writeAsBytes(compressed);
         widget.mindmap['filename'] = f.path;
+    }
+
+    void _edit() {
+        final _controller = TextEditingController();
+        _controller.text = widget.idea['text'];
+
+        void processInput() {
+            widget.idea['text'] = _controller.text;
+            _save();
+            setState(() { });
+            Navigator.of(context).pop();
+        };
+
+        showDialog(
+            context: context,
+            builder: (_) => new AlertDialog(
+                contentPadding: const EdgeInsets.all(16.0),
+                content: TextField(
+                    controller: _controller,
+                    autofocus: true,
+                    onSubmitted: (input) { processInput(); },
+                    decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "Edit Idea...",
+                    ),
+                ),
+                actions: <Widget>[
+                    FlatButton(
+                        child: Text('Edit'),
+                        onPressed: processInput,
+                    ),
+                    FlatButton(
+                        child: Text('Cancel'),
+                        onPressed: () {
+                            Navigator.of(context).pop();
+                        },
+                    ),
+                ],
+            ),
+        );
     }
 
     void _addIdea() {
@@ -396,6 +427,13 @@ class _IdeaPageState extends State<IdeaPage> {
         var appBar = AppBar(
             backgroundColor: strToColor(widget.idea['color']),
             title: Text(widget.idea['text']),
+            actions: [
+                IconButton(
+                        icon: Icon(Icons.edit),
+                        tooltip: "Edit",
+                        onPressed: _edit,
+                ),
+            ],
         );
         if (widget.idea.containsKey('bigImageData')) {
             var bytes = base64.decode(widget.idea['bigImageData'].replaceAll("\n", ""));
