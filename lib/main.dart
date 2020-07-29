@@ -295,12 +295,67 @@ class IdeaPage extends StatefulWidget {
 
 class _IdeaPageState extends State<IdeaPage> {
 
+    String _datestr() {
+        var now = new DateTime.now().toUtc();
+        String y = now.year.toString().padLeft(4, '0');
+        String m = now.month.toString().padLeft(2, '0');
+        String d = now.day.toString().padLeft(2, '0');
+        String h = now.hour.toString().padLeft(2, '0');
+        String min = now.minute.toString().padLeft(2, '0');
+        String sec = now.second.toString().padLeft(2, '0');
+        return "$y-$m-$d $h:$min:$sec +0000";
+    }
+
+    int _count(var idea) {
+        int count = 1;
+        if (idea.containsKey('ideas')) {
+            for (var idea2 in idea['ideas']) {
+                count += _count(idea2);
+            }
+        }
+        return count;
+    }
+
     void _save() {
         var f = File(widget.mindmap['filename']);
         widget.mindmap.remove('filename');
         var compressed = zlib.encode(utf8.encode(json.encode(widget.mindmap)));
         f.writeAsBytes(compressed);
         widget.mindmap['filename'] = f.path;
+        var indexFile = File(f.parent.path + "/mindly.index");
+        var index = json.decode(indexFile.readAsStringSync());
+        bool found = false;
+        var idea = widget.mindmap['ideaDocumentDataObject']['idea'];
+        var itemCount = _count(idea);
+        var dateStr = _datestr();
+        for(var proxy in index['proxies']) {
+            if (proxy['identifier'] == idea['identifier']) {
+                found = true;
+                proxy['text'] = idea['text'];
+                if (idea.containsKey('iconImage')) {
+                    proxy['iconImage'] = idea['iconImage'];
+                } else if (proxy.containsKey('iconImage')) {
+                    proxy.remove('iconImage');
+                }
+                proxy['dateModified'] = dateStr;
+                proxy['itemCount'] = itemCount;
+            }
+        }
+        if (!found) {
+            var proxy = {
+                'identifier': idea['identifier'],
+                'text': idea['text'],
+                'color': idea['color'],
+                'hasNote': idea['hasNote'],
+                'hasWebLink': idea['hasWebLink'],
+                'dateCreated': dateStr,
+                'dateModified': dateStr,
+                'itemCount': itemCount,
+                'filename': f.path.split('/').last,
+            };
+            index['proxies'].add(proxy);
+        }
+        indexFile.writeAsString(json.encode(index));
     }
 
     void _edit() {
