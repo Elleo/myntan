@@ -112,17 +112,13 @@ class _MenuPageState extends State<MenuPage> {
     }
 
     Future<void> _showDialog() async {
-        String snapMessage = "";
-        if (Platform.environment.containsKey('SNAP')) {
-            snapMessage = "\n\nTo give the Myntan snap permission to access your Dropbox folder, open a terminal and run:\n\nsnap connect dropbox-sync:myntan";
-        }
         return showDialog<void>(
             context: context,
             builder: (BuildContext context) {
                 return AlertDialog(
                     title: Text('Enable Synchronisation'),
                     content: SingleChildScrollView(
-                        child: Text("To synchronise with Mindly first install the Dropbox client and then ensure you're synchronising the 'Apps/Mindly' folder." + snapMessage),
+                        child: Text("To synchronise with Mindly first install the Dropbox client and then ensure you're synchronising the 'Apps/Mindly' folder."),
                     ),
                     actions: <Widget>[
                         FlatButton(
