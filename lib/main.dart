@@ -233,6 +233,9 @@ class Idea extends StatelessWidget {
                 title = "[" + this.idea['iconImage']['category'] + "] " + title;
             }
         }
+        if (this.idea['note'] != null && this.idea['note'] != "") {
+            title = title += "\n\n📝";
+        }
         var displayChild;
         if (this.idea.containsKey('bigImageData')) {
             var bytes = base64.decode(this.idea['bigImageData'].replaceAll("\n", ""));
