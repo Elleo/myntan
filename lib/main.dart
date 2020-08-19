@@ -24,8 +24,36 @@ import 'dart:typed_data';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
 
+bool syncAvailable = true;
+
 void main() {
     runApp(Myntan());
+}
+
+String datestr() {
+    var now = new DateTime.now().toUtc();
+    String y = now.year.toString().padLeft(4, '0');
+    String m = now.month.toString().padLeft(2, '0');
+    String d = now.day.toString().padLeft(2, '0');
+    String h = now.hour.toString().padLeft(2, '0');
+    String min = now.minute.toString().padLeft(2, '0');
+    String sec = now.second.toString().padLeft(2, '0');
+    return "$y-$m-$d $h:$min:$sec +0000";
+}
+
+Future<Directory> getStorageDir() async {
+    Directory storageDir = new Directory('/home/' + Platform.environment['LOGNAME'] + '/Dropbox/Apps/Mindly');
+    if (!storageDir.existsSync()) {
+        syncAvailable = false;
+        if (Platform.environment.containsKey('XDG_DATA_HOME')) {
+            storageDir = new Directory(Platform.environment['XDG_DATA_HOME'] + "/Myntan");
+        } else {
+            storageDir = new Directory(Platform.environment['HOME'] + "/Documents/Myntan");
+        }
+        storageDir = await storageDir.create(recursive: true);
+    }
+
+    return storageDir;
 }
 
 Color strToColor(String colorStr) {
@@ -75,23 +103,89 @@ class MenuPage extends StatefulWidget {
 
 class _MenuPageState extends State<MenuPage> {
     List _docs = new List();
-    bool _syncAvailable = true;
+    bool _dirty = true;
 
     void _addMindMap() {
+        final _controller = TextEditingController();
 
+        Future<void> processInput() async {
+            String id = Uuid().v1();
+            var dateStr = datestr();
+
+            var doc = {
+                'ideaDocumentDataObject': {
+                    'fileFormatVersion': 4,
+                    'dateCreated': dateStr,
+                    'dateModified': dateStr,
+                    'idea': {
+                        'ideaType': 1,
+                        'text': _controller.text,
+                        'identifier': id,
+                        'note': '',
+                        'color': 'green0',
+                        'colorThemeType': 0,
+                        'ideas': []
+                    }
+                }
+            };
+
+            Directory storageDir = await getStorageDir();
+
+            var f = File(storageDir.path + "/" + id + ".mndl");
+            var compressed = zlib.encode(utf8.encode(json.encode(doc)));
+            f.writeAsBytes(compressed);
+            var indexFile = File(storageDir.path + "/mindly.index");
+            var index = json.decode(indexFile.readAsStringSync());
+            var proxy = {
+                'identifier': doc['identifier'],
+                'text': doc['text'],
+                'color': doc['color'],
+                'hasNote': false,
+                'hasWebLink': false,
+                'dateCreated': dateStr,
+                'dateModified': dateStr,
+                'itemCount': 1,
+                'filename': id + ".mndl",
+            };
+            index['proxies'].add(proxy);
+            indexFile.writeAsString(json.encode(index));
+            Navigator.of(context).pop();
+            _dirty = true;
+            _refresh();
+        }
+
+        showDialog(
+            context: context,
+            builder: (_) => new AlertDialog(
+                contentPadding: const EdgeInsets.all(16.0),
+                content: TextField(
+                    controller: _controller,
+                    autofocus: true,
+                    onSubmitted: (input) { processInput(); },
+                    decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: "New Mind Map...",
+                    ),
+                ),
+                actions: <Widget>[
+                    FlatButton(
+                        child: Text('Create Mind Map'),
+                        onPressed: processInput
+                    ),
+                    FlatButton(
+                        child: Text('Cancel'),
+                        onPressed: () {
+                            Navigator.of(context).pop();
+                        },
+                    ),
+                ],
+            ),
+        );
     }
 
     Future<void> _loadFiles() async {
-        Directory storageDir = new Directory('/home/' + Platform.environment['LOGNAME'] + '/Dropbox/Apps/Mindly');
-        if (!storageDir.existsSync()) {
-            _syncAvailable = false;
-            if (Platform.environment.containsKey('XDG_DATA_HOME')) {
-                storageDir = new Directory(Platform.environment['XDG_DATA_HOME'] + "/Myntan");
-            } else {
-                storageDir = new Directory(Platform.environment['HOME'] + "/Documents/Myntan");
-            }
-            storageDir = await storageDir.create(recursive: true);
-        }
+        Directory storageDir = await getStorageDir();
+        List oldDocs = _docs;
         _docs = new List();
         var files = storageDir.listSync(recursive: false, followLinks: true);
         for (FileSystemEntity entity in files) {
@@ -104,6 +198,11 @@ class _MenuPageState extends State<MenuPage> {
                 doc['filename'] = f.path;
                 _docs.add(doc);
             }
+        }
+
+        if (_dirty) {
+            _refresh();
+            _dirty = false;
         }
     }
 
@@ -139,7 +238,7 @@ class _MenuPageState extends State<MenuPage> {
         _loadFiles();
         List<Widget> actions = new List();
 
-        if (!_syncAvailable) {
+        if (!syncAvailable) {
             Widget warningBtn = new IconButton(
                         icon: Icon(Icons.warning),
                         tooltip: "Synchronisation disabled, click to enable",
@@ -154,7 +253,10 @@ class _MenuPageState extends State<MenuPage> {
                 actions: actions,
             ),
             body: RefreshIndicator(
-                onRefresh: _refresh,
+                onRefresh: () {
+                    _dirty = true;
+                    return _refresh();
+                },
                 child: Center(
                     child: AspectRatio(
                         aspectRatio: 1,
@@ -294,17 +396,6 @@ class IdeaPage extends StatefulWidget {
 
 class _IdeaPageState extends State<IdeaPage> {
 
-    String _datestr() {
-        var now = new DateTime.now().toUtc();
-        String y = now.year.toString().padLeft(4, '0');
-        String m = now.month.toString().padLeft(2, '0');
-        String d = now.day.toString().padLeft(2, '0');
-        String h = now.hour.toString().padLeft(2, '0');
-        String min = now.minute.toString().padLeft(2, '0');
-        String sec = now.second.toString().padLeft(2, '0');
-        return "$y-$m-$d $h:$min:$sec +0000";
-    }
-
     int _count(var idea) {
         int count = 1;
         if (idea.containsKey('ideas')) {
@@ -319,14 +410,14 @@ class _IdeaPageState extends State<IdeaPage> {
         var f = File(widget.mindmap['filename']);
         widget.mindmap.remove('filename');
         var compressed = zlib.encode(utf8.encode(json.encode(widget.mindmap)));
-        f.writeAsBytes(compressed);
+        f.writeAsBytesSync(compressed);
         widget.mindmap['filename'] = f.path;
         var indexFile = File(f.parent.path + "/mindly.index");
         var index = json.decode(indexFile.readAsStringSync());
         bool found = false;
         var idea = widget.mindmap['ideaDocumentDataObject']['idea'];
         var itemCount = _count(idea);
-        var dateStr = _datestr();
+        var dateStr = datestr();
         for(var proxy in index['proxies']) {
             if (proxy['identifier'] == idea['identifier']) {
                 found = true;
@@ -354,7 +445,7 @@ class _IdeaPageState extends State<IdeaPage> {
             };
             index['proxies'].add(proxy);
         }
-        indexFile.writeAsString(json.encode(index));
+        indexFile.writeAsStringSync(json.encode(index));
     }
 
     void _edit() {
