@@ -23,6 +23,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 
 bool syncAvailable = true;
 
@@ -107,6 +108,7 @@ class _MenuPageState extends State<MenuPage> {
 
     void _addMindMap() {
         final _controller = TextEditingController();
+        String _color = 'green0';
 
         Future<void> processInput() async {
             String id = Uuid().v1();
@@ -122,7 +124,7 @@ class _MenuPageState extends State<MenuPage> {
                         'text': _controller.text,
                         'identifier': id,
                         'note': '',
-                        'color': 'green0',
+                        'color': _color,
                         'colorThemeType': 0,
                         'ideas': []
                     }
@@ -158,15 +160,31 @@ class _MenuPageState extends State<MenuPage> {
             context: context,
             builder: (_) => new AlertDialog(
                 contentPadding: const EdgeInsets.all(16.0),
-                content: TextField(
-                    controller: _controller,
-                    autofocus: true,
-                    onSubmitted: (input) { processInput(); },
-                    decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "New Mind Map...",
-                    ),
-                ),
+                content: Container(height: 119, child: Wrap(
+                    runSpacing: 20,
+                    children: <Widget>[
+                        TextField(
+                            controller: _controller,
+                            autofocus: true,
+                            onSubmitted: (input) { processInput(); },
+                            decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                labelText: "New Mind Map...",
+                            ),
+                        ),
+                        Row(
+                            children: <Widget>[
+                                Text('Colour: '),
+                                RawMaterialButton(
+                                    onPressed: () {},
+                                    elevation: 2.0,
+                                    fillColor: Colors.green,
+                                    shape: CircleBorder(),
+                                ),
+                            ],
+                        ),
+                    ],
+                )),
                 actions: <Widget>[
                     FlatButton(
                         child: Text('Create Mind Map'),
