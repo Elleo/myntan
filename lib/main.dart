@@ -187,14 +187,14 @@ class _MenuPageState extends State<MenuPage> {
                 )),
                 actions: <Widget>[
                     FlatButton(
-                        child: Text('Create Mind Map'),
-                        onPressed: processInput
-                    ),
-                    FlatButton(
                         child: Text('Cancel'),
                         onPressed: () {
                             Navigator.of(context).pop();
                         },
+                    ),
+                    FlatButton(
+                        child: Text('Create Mind Map'),
+                        onPressed: processInput
                     ),
                 ],
             ),
@@ -492,14 +492,14 @@ class _IdeaPageState extends State<IdeaPage> {
                 ),
                 actions: <Widget>[
                     FlatButton(
-                        child: Text('Edit'),
-                        onPressed: processInput,
-                    ),
-                    FlatButton(
                         child: Text('Cancel'),
                         onPressed: () {
                             Navigator.of(context).pop();
                         },
+                    ),
+                    FlatButton(
+                        child: Text('Edit'),
+                        onPressed: processInput,
                     ),
                 ],
             ),
@@ -543,14 +543,14 @@ class _IdeaPageState extends State<IdeaPage> {
                 ),
                 actions: <Widget>[
                     FlatButton(
-                        child: Text('Add Idea'),
-                        onPressed: processInput,
-                    ),
-                    FlatButton(
                         child: Text('Cancel'),
                         onPressed: () {
                             Navigator.of(context).pop();
                         },
+                    ),
+                    FlatButton(
+                        child: Text('Add Idea'),
+                        onPressed: processInput,
                     ),
                 ],
             ),
