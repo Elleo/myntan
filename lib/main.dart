@@ -501,9 +501,11 @@ class _IdeaPageState extends State<IdeaPage> {
     void _edit() {
         final _controller = TextEditingController();
         _controller.text = widget.idea['text'];
+        Color _color = strToColor(widget.idea['color']);
 
         void processInput() {
             widget.idea['text'] = _controller.text;
+            widget.idea['color'] = colorToStr(_color);
             _save();
             setState(() { });
             Navigator.of(context).pop();
@@ -513,13 +515,31 @@ class _IdeaPageState extends State<IdeaPage> {
             context: context,
             builder: (_) => new AlertDialog(
                 contentPadding: const EdgeInsets.all(16.0),
-                content: TextField(
-                    controller: _controller,
-                    autofocus: true,
-                    onSubmitted: (input) { processInput(); },
-                    decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "Edit Idea...",
+                content: Container(
+                    height: 140,
+                    child: Wrap(
+                        runSpacing: 20,
+                        children: <Widget>[
+                            TextField(
+                                controller: _controller,
+                                autofocus: true,
+                                onSubmitted: (input) { processInput(); },
+                                decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: "Edit Idea...",
+                                ),
+                            ),
+                            Container(height: 120,
+                                    child: MaterialColorPicker(
+                                            allowShades: false,
+                                            selectedColor: _color,
+                                            colors: colorSet,
+                                            onMainColorChange: (Color color) {
+                                                _color = color;
+                                            },
+                                    ),
+                            ),
+                        ],
                     ),
                 ),
                 actions: <Widget>[
@@ -540,13 +560,14 @@ class _IdeaPageState extends State<IdeaPage> {
 
     void _addIdea() {
         final _controller = TextEditingController();
+        Color _color = strToColor(widget.idea['color']);
 
         void processInput() {
             var newIdea = {
                 'identifier': Uuid().v1(),
                 'text': _controller.text,
                 'ideaType': 1,
-                'color': widget.idea['color'],
+                'color': colorToStr(_color),
                 'colorThemeType': 1,
                 'ideas': [],
             };
@@ -564,13 +585,31 @@ class _IdeaPageState extends State<IdeaPage> {
             context: context,
             builder: (_) => new AlertDialog(
                 contentPadding: const EdgeInsets.all(16.0),
-                content: TextField(
-                    controller: _controller,
-                    autofocus: true,
-                    onSubmitted: (input) { processInput(); },
-                    decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: "New Idea...",
+                content: Container(
+                    height: 140,
+                    child: Wrap(
+                        runSpacing: 20,
+                        children: <Widget>[
+                            TextField(
+                                controller: _controller,
+                                autofocus: true,
+                                onSubmitted: (input) { processInput(); },
+                                decoration: InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: "New Idea...",
+                                ),
+                            ),
+                            Container(height: 120,
+                                    child: MaterialColorPicker(
+                                            allowShades: false,
+                                            selectedColor: _color,
+                                            colors: colorSet,
+                                            onMainColorChange: (Color color) {
+                                                _color = color;
+                                            },
+                                    ),
+                            ),
+                        ],
                     ),
                 ),
                 actions: <Widget>[
