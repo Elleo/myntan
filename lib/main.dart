@@ -23,9 +23,22 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
+import 'package:dart_random_choice/dart_random_choice.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 
 bool syncAvailable = true;
+
+List<ColorSwatch<dynamic>> colorSet = [
+    Colors.brown,
+    Colors.pink,
+    Colors.red,
+    Colors.orange,
+    Colors.green,
+    Colors.yellow,
+    Colors.blue,
+    Colors.cyan,
+    Colors.grey,
+];
 
 void main() {
     runApp(Myntan());
@@ -72,9 +85,29 @@ Color strToColor(String colorStr) {
     if (colorStr.startsWith("blue"))    return Colors.blue[variant];
     if (colorStr.startsWith("indigo")
       || colorStr.startsWith("violet")) return Colors.indigo[variant];
+    if (colorStr.startsWith("purple"))    return Colors.purple[variant];
+    if (colorStr.startsWith("grey"))    return Colors.grey[variant];
+    if (colorStr.startsWith("brown"))    return Colors.brown[variant];
     if (colorStr.startsWith("black"))   return Colors.black;
     if (colorStr.startsWith("white"))   return Colors.white;
     return Colors.white;
+}
+
+String colorToStr(Color color) {
+    if (color == Colors.pink)       return "pink0";
+    if (color == Colors.cyan)       return "cyan0";
+    if (color == Colors.red)        return "red0";
+    if (color == Colors.yellow)     return "yellow0";
+    if (color == Colors.orange)     return "orange0";
+    if (color == Colors.green)      return "green0";
+    if (color == Colors.blue)       return "blue0";
+    if (color == Colors.indigo)     return "indigo0";
+    if (color == Colors.purple)     return "purple0";
+    if (color == Colors.brown)     return "brown0";
+    if (color == Colors.grey)     return "grey0";
+    if (color == Colors.black)      return "black0";
+    if (color == Colors.white)      return "white0";
+    return "white0";
 }
 
 class Myntan extends StatelessWidget {
@@ -108,7 +141,7 @@ class _MenuPageState extends State<MenuPage> {
 
     void _addMindMap() {
         final _controller = TextEditingController();
-        String _color = 'green0';
+        Color _color = randomChoice(colorSet);
 
         Future<void> processInput() async {
             String id = Uuid().v1();
@@ -124,7 +157,7 @@ class _MenuPageState extends State<MenuPage> {
                         'text': _controller.text,
                         'identifier': id,
                         'note': '',
-                        'color': _color,
+                        'color': colorToStr(_color),
                         'colorThemeType': 0,
                         'ideas': []
                     }
@@ -160,7 +193,7 @@ class _MenuPageState extends State<MenuPage> {
             context: context,
             builder: (_) => new AlertDialog(
                 contentPadding: const EdgeInsets.all(16.0),
-                content: Container(height: 119, child: Wrap(
+                content: Container(height: 140, child: Wrap(
                     runSpacing: 20,
                     children: <Widget>[
                         TextField(
@@ -172,16 +205,15 @@ class _MenuPageState extends State<MenuPage> {
                                 labelText: "New Mind Map...",
                             ),
                         ),
-                        Row(
-                            children: <Widget>[
-                                Text('Colour: '),
-                                RawMaterialButton(
-                                    onPressed: () {},
-                                    elevation: 2.0,
-                                    fillColor: Colors.green,
-                                    shape: CircleBorder(),
+                        Container(height: 120,
+                                child: MaterialColorPicker(
+                                        allowShades: false,
+                                        selectedColor: _color,
+                                        colors: colorSet,
+                                        onMainColorChange: (Color color) {
+                                            _color = color;
+                                        },
                                 ),
-                            ],
                         ),
                     ],
                 )),
