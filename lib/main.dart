@@ -110,6 +110,60 @@ String colorToStr(Color color) {
     return "white0";
 }
 
+int countIdeas(var idea) {
+    int count = 1;
+    if (idea.containsKey('ideas')) {
+        for (var idea2 in idea['ideas']) {
+            count += countIdeas(idea2);
+        }
+    }
+    return count;
+}
+
+void save(Map mindmap) {
+    var f = File(mindmap['filename']);
+    mindmap.remove('filename');
+    var compressed = zlib.encode(utf8.encode(json.encode(mindmap)));
+    f.writeAsBytesSync(compressed);
+    mindmap['filename'] = f.path;
+    var indexFile = File(f.parent.path + "/mindly.index");
+    var index = json.decode(indexFile.readAsStringSync());
+    bool found = false;
+    var idea = mindmap['ideaDocumentDataObject']['idea'];
+    var itemCount = countIdeas(idea);
+    var dateStr = datestr();
+    for(var proxy in index['proxies']) {
+        if (proxy['identifier'] == idea['identifier']) {
+            found = true;
+            proxy['text'] = idea['text'];
+            if (idea.containsKey('iconImage')) {
+                proxy['iconImage'] = idea['iconImage'];
+            } else if (proxy.containsKey('iconImage')) {
+                proxy.remove('iconImage');
+            }
+            proxy['dateModified'] = dateStr;
+            proxy['itemCount'] = itemCount;
+        }
+    }
+    if (!found) {
+        var proxy = {
+            'identifier': idea['identifier'],
+            'text': idea['text'],
+            'color': idea['color'],
+            'hasNote': idea['hasNote'],
+            'hasWebLink': idea['hasWebLink'],
+            'dateCreated': dateStr,
+            'dateModified': dateStr,
+            'itemCount': itemCount,
+            'filename': f.path.split('/').last,
+        };
+        index['proxies'].add(proxy);
+    }
+
+    indexFile.writeAsStringSync(json.encode(index));
+}
+
+
 class Myntan extends StatelessWidget {
     // This widget is the root of your application.
     @override
@@ -401,7 +455,48 @@ class Idea extends StatelessWidget {
         return GridTile(
             child: GestureDetector(
                 onTap: () {
-                    if (!this.center) {
+                    final _controller = TextEditingController();
+                    _controller.text = this.idea['note'];
+
+                    void processInput() {
+                        this.idea['note'] = _controller.text;
+                        save(this.mindmap);
+                        parent.setState(() { });
+                        Navigator.of(context).pop();
+                    }
+
+                    if (this.center) {
+                        showDialog(
+                            context: context,
+                            builder: (_) => new AlertDialog(
+                                contentPadding: const EdgeInsets.all(16.0),
+                                content: TextField(
+                                        controller: _controller,
+                                        minLines: 8,
+                                        maxLines: null,
+                                        keyboardType: TextInputType.multiline,
+                                        autofocus: true,
+                                        textInputAction: TextInputAction.newline,
+                                        decoration: InputDecoration(
+                                                border: OutlineInputBorder(),
+                                                labelText: "Notes...",
+                                        ),
+                                ),
+                                actions: <Widget>[
+                                    FlatButton(
+                                        child: Text('Cancel'),
+                                        onPressed: () {
+                                            Navigator.of(context).pop();
+                                        },
+                                    ),
+                                    FlatButton(
+                                        child: Text('Save'),
+                                        onPressed: processInput,
+                                    ),
+                                ],
+                            ),
+                        );
+                    } else {
                         Navigator.push(
                             context,
                             MaterialPageRoute(builder: (context) => IdeaPage(mindmap: this.mindmap, idea: this.idea)),
@@ -446,58 +541,6 @@ class IdeaPage extends StatefulWidget {
 
 class _IdeaPageState extends State<IdeaPage> {
 
-    int _count(var idea) {
-        int count = 1;
-        if (idea.containsKey('ideas')) {
-            for (var idea2 in idea['ideas']) {
-                count += _count(idea2);
-            }
-        }
-        return count;
-    }
-
-    void _save() {
-        var f = File(widget.mindmap['filename']);
-        widget.mindmap.remove('filename');
-        var compressed = zlib.encode(utf8.encode(json.encode(widget.mindmap)));
-        f.writeAsBytesSync(compressed);
-        widget.mindmap['filename'] = f.path;
-        var indexFile = File(f.parent.path + "/mindly.index");
-        var index = json.decode(indexFile.readAsStringSync());
-        bool found = false;
-        var idea = widget.mindmap['ideaDocumentDataObject']['idea'];
-        var itemCount = _count(idea);
-        var dateStr = datestr();
-        for(var proxy in index['proxies']) {
-            if (proxy['identifier'] == idea['identifier']) {
-                found = true;
-                proxy['text'] = idea['text'];
-                if (idea.containsKey('iconImage')) {
-                    proxy['iconImage'] = idea['iconImage'];
-                } else if (proxy.containsKey('iconImage')) {
-                    proxy.remove('iconImage');
-                }
-                proxy['dateModified'] = dateStr;
-                proxy['itemCount'] = itemCount;
-            }
-        }
-        if (!found) {
-            var proxy = {
-                'identifier': idea['identifier'],
-                'text': idea['text'],
-                'color': idea['color'],
-                'hasNote': idea['hasNote'],
-                'hasWebLink': idea['hasWebLink'],
-                'dateCreated': dateStr,
-                'dateModified': dateStr,
-                'itemCount': itemCount,
-                'filename': f.path.split('/').last,
-            };
-            index['proxies'].add(proxy);
-        }
-        indexFile.writeAsStringSync(json.encode(index));
-    }
-
     void _edit() {
         final _controller = TextEditingController();
         _controller.text = widget.idea['text'];
@@ -506,7 +549,7 @@ class _IdeaPageState extends State<IdeaPage> {
         void processInput() {
             widget.idea['text'] = _controller.text;
             widget.idea['color'] = colorToStr(_color);
-            _save();
+            save(widget.mindmap);
             setState(() { });
             Navigator.of(context).pop();
         };
@@ -576,7 +619,7 @@ class _IdeaPageState extends State<IdeaPage> {
             } else {
                 widget.idea['ideas'] = [newIdea];
             }
-            _save();
+            save(widget.mindmap);
             setState(() { });
             Navigator.of(context).pop();
         };
