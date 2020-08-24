@@ -23,6 +23,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:dart_random_choice/dart_random_choice.dart';
 import 'package:flutter_material_color_picker/flutter_material_color_picker.dart';
 
@@ -56,6 +57,10 @@ String datestr() {
 }
 
 Future<Directory> getStorageDir() async {
+    if (Platform.isAndroid) {
+        return getApplicationDocumentsDirectory();
+    }
+
     Directory storageDir = new Directory('/home/' + Platform.environment['LOGNAME'] + '/Dropbox/Apps/Mindly');
     if (!storageDir.existsSync()) {
         syncAvailable = false;
@@ -127,7 +132,13 @@ void save(Map mindmap) {
     f.writeAsBytesSync(compressed);
     mindmap['filename'] = f.path;
     var indexFile = File(f.parent.path + "/mindly.index");
-    var index = json.decode(indexFile.readAsStringSync());
+    var index;
+    if (!indexFile.existsSync()) {
+        indexFile.create();
+        index = {'proxies': []};
+    } else {
+        index = json.decode(indexFile.readAsStringSync());
+    }
     bool found = false;
     var idea = mindmap['ideaDocumentDataObject']['idea'];
     var itemCount = countIdeas(idea);
@@ -541,6 +552,23 @@ class IdeaPage extends StatefulWidget {
 
 class _IdeaPageState extends State<IdeaPage> {
 
+    void _delete() {
+        bool delIdea(idea, ideas) {
+            if (ideas.remove(idea)) {
+                return true;
+            } else {
+                for (var idea2 in ideas) {
+                    if (delIdea(idea, idea2['ideas'])) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        delIdea(widget.idea, widget.mindmap);
+    }
+
     void _edit() {
         final _controller = TextEditingController();
         _controller.text = widget.idea['text'];
@@ -710,6 +738,11 @@ class _IdeaPageState extends State<IdeaPage> {
             backgroundColor: strToColor(widget.idea['color']),
             title: Text(widget.idea['text']),
             actions: [
+                IconButton(
+                        icon: Icon(Icons.delete),
+                        tooltip: "Delete",
+                        onPressed: _delete,
+                ),
                 IconButton(
                         icon: Icon(Icons.edit),
                         tooltip: "Edit",

@@ -28,6 +28,7 @@ dependencies:
   uuid: ^2.2.0
   flutter_material_color_picker: ^1.0.5
   dart_random_choice: ^0.0.2
+  path_provider: ^1.6.14
 
 dev_dependencies:
   flutter_test:
