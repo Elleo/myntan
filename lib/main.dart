@@ -57,7 +57,7 @@ String datestr() {
 }
 
 Future<Directory> getStorageDir() async {
-    if (Platform.isAndroid) {
+    if (!Platform.isLinux) {
         return getApplicationDocumentsDirectory();
     }
 
